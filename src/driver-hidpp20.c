@@ -330,8 +330,13 @@ hidpp20drv_read_led_8070(struct ratbag_led *led, struct hidpp20drv_data* drv_dat
 
 	if (drv_data->capabilities & HIDPP_CAP_ONBOARD_PROFILES_8100) {
 		profile = &drv_data->profiles->profiles[led->profile->index];
-		h_led = &profile->leds[led->index];
+	if (drv_data->profiles->profile_format_id == HIDPP20_ONBOARD_PROFILES_PROFILE_TYPE_G502X &&
+		drv_data->num_leds == 1) {
+		// On G502X the led effect is on the second led slot.
+		h_led = &profile->leds[1];
 	} else {
+		h_led = &profile->leds[led->index];
+	}	} else {
 		rc = hidpp20_color_led_effects_get_zone_effect(drv_data->dev, led->index, h_led);
 		if (rc) {
 			log_debug(led->profile->device->ratbag,
@@ -689,7 +694,13 @@ hidpp20drv_update_led_8070_8071(struct ratbag_led *led, struct ratbag_profile* p
 
 	if (drv_data->capabilities & HIDPP_CAP_ONBOARD_PROFILES_8100) {
 		h_profile = &drv_data->profiles->profiles[profile->index];
-		h_led = &(h_profile->leds[led->index]);
+			if (drv_data->profiles->profile_format_id == HIDPP20_ONBOARD_PROFILES_PROFILE_TYPE_G502X &&
+			drv_data->num_leds == 1) {
+			// On G502X the effects need to be set on the second led slot.
+			h_led = &(h_profile->leds[1]);
+		} else {
+			h_led = &(h_profile->leds[led->index]);
+		}
 	}
 
 	if (!h_led)
